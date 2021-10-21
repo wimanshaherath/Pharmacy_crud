@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns:th="htttps://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pharmacy</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+          integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+            integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+            integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js"
+            integrity="sha512-n/4gHW3atM3QqRcbCn6ewmpxcLAHGaDjpEBu4xZd47N0W2oQ+6q7oc3PXstrJYXcbNU1OHdQ1T7pAP+gi5Yu8g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</head>
+<body>
+<!--<h1>hello </h1>-->
+<!--<h2 th:text="${something}"/>-->
+
+
+<container class="p-2">
+<!--    <h5>Search item</h5>-->
+<!--    <div class="form-group">-->
+<!--        <input type="text" class=" form-control w-75 m-3" id="searchId" aria-describedby="emailHelp"-->
+<!--               placeholder="Type the ID" required>-->
+<!--        <button type="button" class="btn btn-primary ml-3" id="btnSearch">Search</button>-->
+<!--    </div>-->
+
+    <div class="mt-5">
+        <h5>Add items</h5>
+        <form class="m-3 w-75" action="http://localhost:8080/api/item" th:object="${item}" method="post" id="item-form">
+            <div class="form-group">
+                <label for="id">ID</label>
+                <input type="text" class="form-control" th:field="*{id}" id="id" aria-describedby="emailHelp"
+                       placeholder="Ex: 123456" pattern="^0$|^[1-9][0-9]*$"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" th:field="*{name}" id="name" placeholder="Ex: panadol" pattern="[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$" required>
+            </div>
+            <div class="form-group">
+                <label for="brand">Brand Name</label>
+                <input type="text" class="form-control" th:field="*{brand}" id="brand" placeholder="Ex: indiana" pattern="[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="price">Unit Price</label>
+                <input type="text" class="form-control" th:field="*{price}" id="price" pattern="^\d{0,8}(\.\d{1,4})?$" placeholder="Ex: 100"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="qty">Quantity</label>
+                <input type="text" class="form-control" th:field="*{qty}" id="qty" pattern="^0$|^[1-9][0-9]*$" placeholder="Ex: 20" required>
+            </div>
+
+
+            <button type="submit" class="btn btn-primary" id="formSubmit">Submit</button>
+            <button type="button" class="btn btn-primary" id="update" disabled>Update</button>
+        </form>
+
+    </div>
+
+    <div class="ml-2 mt-5 w-75">
+        <h5>View all items</h5>
+        <button type='button' class="btn btn-primary" id="btnview">view all</button>
+        <table class="table m-3">
+            <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Brand</th>
+                <th scope="col">Unit price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody id="tablebody">
+
+            </tbody>
+        </table>
+    </div>
+
+</container>
+
+<scirpt src="jquery.miranda.min.js" type="text/javascript"></scirpt>
+<script type="text/javascript">
+
+    $(document).ready(() => {
+        viewData()
+        $("#item-form").submit((event) => {
+            event.preventDefault()
+            let post_url = $(this).attr("action")
+            let method = $(this).attr("method")
+            let form_data = {
+                id: $("#id").val(),
+                name: $("#name").val(),
+                brand: $("#brand").val(),
+                price: $("#price").val(),
+                qty: $("#qty").val(),
+
+            }
+            $.ajax(
+                {
+                    url: "http://localhost:8080/api/item",
+                    type: "POST",
+                    contentType: "application/json; charset=UTF-8",
+                    data: JSON.stringify(form_data),
+                    success: (response) => {
+                        if (response == "success") {
+                            alert("success")
+                            loadTableData()
+                        }
+                    }
+                }
+            )
+
+        })
+
+        $("#btnview").click((event) => {
+            viewData();
+        })
+
+        // $("#btnSearch").click((event) => {
+        //     var id = $("#searchId").val()
+        //     $.get("http://localhost:8080/api/item/" + id, function (response) {
+        //         $('#id').val(response.id)
+        //         $('#name').val(response.name)
+        //         $('#brand').val(response.brand)
+        //         $('#price').val(response.price)
+        //         $('#qty').val(response.qty)
+        //         $("#formSubmit").prop("disabled", true)
+        //         $('#id').prop("disabled", true)
+        //         $('#update').prop("disabled", false)
+        //         $('#delete').prop("disabled", false)
+        //     });
+        // })
+
+        $('#update').click((event) => {
+            let form_data = {
+                id: $("#id").val(),
+                name: $("#name").val(),
+                brand: $("#brand").val(),
+                price: $("#price").val(),
+                qty: $("#qty").val(),
+
+            }
+            $.ajax(
+                {
+                    url: "http://localhost:8080/api/item",
+                    type: "PUT",
+                    contentType: "application/json; charset=UTF-8",
+                    data: JSON.stringify(form_data),
+                    success: (response) => {
+                        if (response == "updated") {
+                            alert("data updated")
+                            loadTableData()
+                        }
+                    }
+                }
+            )
+            // $('#tablebody').load('#tablebody')
+            $("#formSubmit").prop("disabled", false)
+            $('#id').prop("disabled", false)
+        })
+
+
+        // $('#delete').click(()=>{
+        //     let id = $('#id').val()
+        //     var ajxReq = $.ajax( 'http://localhost:8080/api/item/'+id, {
+        //         type : 'DELETE'
+        //     });
+        // })
+    })
+
+    function loadTableData(){
+        $("#tablebody").html('')
+        $.ajax({
+            url: "http://localhost:8080/api/item",
+            type: "GET",
+            // contentType: "application/json; charset=UTF-8",
+            success: (response) => {
+
+                $(response).each(function(i,data){
+                    var row = $('<tr><td>' + data.id + '</td><td>' + data.name + '</td><td>' + data.brand + '</td><td>' + data.price + '</td><td>' + data.qty + '</td><td><button type="button" class="btn btn-primary edit" data-itemid='+ data.id +'>edit</button>\n' +
+                        '            <button type="button" class="btn btn-primary delete"  data-itemid='+ data.id +'>Delete</button></td></tr>');
+                    $('#tablebody').append(row);
+                })
+                // $("#tablebody").mirandajs(data)
+                loadButton();
+            }
+        })
+    }
+    function viewData() {
+
+        let data = $.ajax({
+            url: "http://localhost:8080/api/item",
+            type: "GET",
+            // contentType: "application/json; charset=UTF-8",
+            success: (response) => {
+                data = response
+                // console.log(response)
+                console.log(data);
+                for (var i = 0; i < data.length; i++) {
+                    var row = $('<tr><td>' + data[i].id + '</td><td>' + data[i].name + '</td><td>' + data[i].brand + '</td><td>' + data[i].price + '</td><td>' + data[i].qty + '</td><td><button type="button" class="btn btn-primary edit" data-itemid='+ data[i].id +'>edit</button>\n' +
+                        '            <button type="button" class="btn btn-primary delete" data-itemid='+ data[i].id +' >Delete</button></td></tr>');
+                    $('#tablebody').append(row);
+                }
+                loadButton();
+
+            }
+        })
+    }
+    function loadButton() {
+        $('.edit').click(function(){
+            getSingleItem($($(this)).data("itemid"))
+            // console.log($($(this)[0]).data("itemid"))
+
+        })
+        $('.delete').click(function(){
+            deleteItem($($(this)).data("itemid"))
+            // console.log($($(this)[0]).data("itemid"))
+
+        })
+
+    }
+    function deleteItem(id){
+        $.ajax( {
+            url:'http://localhost:8080/api/item/'+id,
+            type : 'DELETE',
+            success:function(data){
+                loadTableData()
+            }
+        });
+
+    }
+    function getSingleItem(id){
+        $.get("http://localhost:8080/api/item/" + id, function (response) {
+            $('#id').val(response.id)
+            $('#name').val(response.name)
+            $('#brand').val(response.brand)
+            $('#price').val(response.price)
+            $('#qty').val(response.qty)
+            $("#formSubmit").prop("disabled", true)
+            $('#id').prop("disabled", true)
+            $('#update').prop("disabled", false)
+            $('#delete').prop("disabled", false)
+        });
+    }
+
+</script>
+
+</body>
+</html>
